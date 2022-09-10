@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.route('/').get(cheackAuth, getProjects).post(cheackAuth, newProject)
 router.route('/:id').get(cheackAuth, getProject).put(cheackAuth, editProject).delete(cheackAuth, deleteProject)
-router.get('/to-do/:id', cheackAuth, getToDo)
+router.get('/toDo/:id', cheackAuth, getToDo)
 router.post('/add-collaborator/:id', cheackAuth, addCollaborator)
 router.post('/delete-collaborator/:id', cheackAuth, deleteCollaborator)
 

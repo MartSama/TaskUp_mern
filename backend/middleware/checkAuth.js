@@ -10,7 +10,7 @@ const cheackAuth = async (req, res, next) => {
             req.user = await User.findById(decoded._id).select("-password -confirm -token -createdAt -updatedAt -__v")
             return next()
         } catch (error) {
-            return res.status(404).json({ msg: 'Failed' })
+            return res.status(404).json({ msg: 'Invalid Token' })
         }
     }
     if (!token) {
