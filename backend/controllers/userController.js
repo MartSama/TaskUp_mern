@@ -1,7 +1,8 @@
 import User from "../models/User.js"
 import { generateId } from "../helpers/generateId.js";
 import { generateJwt } from "../helpers/generateJWT.js";
-import e from "express";
+import { registerEmail } from "../helpers/emails.js";
+
 export const registerUser = async (req, res) => {
     const { email } = req.body;
     const alreadyExistUser = await User.findOne({ email })
@@ -13,11 +14,14 @@ export const registerUser = async (req, res) => {
         const user = new User(req.body)
         user.token = generateId();
         const savedUser = await user.save()
-        res.json(savedUser)
+        res.json({ msg: "User created correctly🥳, check your email to confirm your account" })
+
+        //Send confirmation email
+        registerEmail({ email: user.email, name: user.name, token: user.token })
     } catch (error) {
-        console.log(error)
+        console.log(error.response)
     }
-    res.json({ msg: 'Created' })
+    //res.json({ msg: 'Created' })
 }
 
 export const auth = async (req, res) => {

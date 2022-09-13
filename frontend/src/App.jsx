@@ -5,7 +5,6 @@ import Register from "./pages/Register"
 import ForgotPassword from "./pages/ForgotPassword"
 import NewPassword from "./pages/NewPassword"
 import ConfirmAccount from "./pages/ConfirmAccount"
-import { toast } from "react-toastify"
 function App() {
 
   return (
