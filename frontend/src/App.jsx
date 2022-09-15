@@ -8,11 +8,14 @@ import ConfirmAccount from "./pages/ConfirmAccount"
 import { AuthProvider } from "./context/AuthProvider"
 import Projects from "./pages/Projects"
 import ProtectedRoute from "./layout/ProtectedRoute"
+import NewProject from "./pages/NewProject"
+import { ProjectProvider } from "./context/ProjectProvider"
 function App() {
 
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ProjectProvider>
         <Routes>
           <Route path="/" element={<AuthLayout />}>
             <Route index element={<Login />} />
@@ -24,8 +27,10 @@ function App() {
 
           <Route path="/projects" element={<ProtectedRoute />}>
             <Route index element={<Projects />} />
+              <Route path="new-project" element={<NewProject />} />
           </Route>
         </Routes>
+        </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>
   )
