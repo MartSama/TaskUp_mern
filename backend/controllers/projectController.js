@@ -95,7 +95,7 @@ export const getToDo = async (req, res) => {
     const project = await Project.findById(id)
     if (!project) {
         const error = new Error("Project not found")
-        res.status(404).json({ msg: error.message })
+        return res.status(404).json({ msg: error.message })
     }
 
 

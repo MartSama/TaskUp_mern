@@ -2,13 +2,14 @@ import React from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Alert from '../components/Alert'
-import axios from 'axios'
+import axiosClient from '../config/axiosClient'
 const Register = () => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [repeatPassword, setRepeatPassword] = useState('')
     const [alert, setAlert] = useState({})
+    const [created, setCreated] = useState(false)
     const handleSubmit = async (e) => {
         e.preventDefault()
         if ([name, email, password, repeatPassword].includes('')) {
@@ -23,18 +24,14 @@ const Register = () => {
             setAlert({ msg: 'Password are too short, 6 character minumun 🔐', type: 'error' })
             return
         }
-        setAlert({})
         try {
-            const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users`, { name, password, email })
+            const { data } = await axiosClient.post(`/users`, { name, password, email })
             setAlert({ msg: data.msg, type: "success" })
-            setName('')
-            setEmail('')
-            setPassword('')
-            setRepeatPassword('')
+            setCreated(true)
         } catch (error) {
             setAlert({ msg: error.response.data?.msg, type: 'warning' })
         }
-        console.log('Creating')
+        setAlert({})
     }
 
     return (
@@ -42,7 +39,8 @@ const Register = () => {
             {alert.msg && <Alert message={alert} />}
             <h1 className='text-sky-600 font-black text-6xl capitalize'>Create your account and  <span className='text-slate-300'> manage your projects</span></h1>
 
-            <form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit}>
+            {created ? (<h1 className='mt-40 text-slate-300 font-black p-10 bg-gray-600 rounded-lg text-6xl capitalize'>Check your email to confirm <span className='text-sky-600'> your account</span></h1>)
+                : (<form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit}>
                 <div className='my-5'>
                     <label className='uppercase text-gray-300 block text-xl mb-3 font-bold' htmlFor="name">Name: </label>
 
@@ -68,7 +66,7 @@ const Register = () => {
                     <div className='md:w-1/3 lg:w-1/2 '></div>
                     <input type="submit" value='Create account' className='bg-sky-600 w-full py-2 rounded shadow mt-2 uppercase font-bold hover:cursor-pointer hover:bg-sky-900 animate-pulse transition-colors' />
                 </div>
-            </form>
+                </form>)}
 
             <nav className='lg:flex lg:justify-between'>
                 <Link className='block text-center my-5 text-slate-400' to='/'>Have an account? Log In!</Link>

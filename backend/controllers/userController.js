@@ -2,6 +2,7 @@ import User from "../models/User.js"
 import { generateId } from "../helpers/generateId.js";
 import { generateJwt } from "../helpers/generateJWT.js";
 import { registerEmail } from "../helpers/emails.js";
+import { forgto_passwordEmail } from "../helpers/emailForgot-password.js";
 
 export const registerUser = async (req, res) => {
     const { email } = req.body;
@@ -31,13 +32,13 @@ export const auth = async (req, res) => {
     const user = await User.findOne({ email })
     if (!user) {
         const error = new Error("User no exists")
-        res.status(404).json({ msg: error.message })
+        return res.status(404).json({ msg: error.message })
     }
 
     //Check if is it confirmated
-    if (!user.confirm) {
+    if (!user?.confirm) {
         const error = new Error("Usuario Exists but it is not confirm")
-        res.status(403).json({ msg: error.message })
+        return res.status(403).json({ msg: error.message })
     }
 
     //Check password
@@ -45,7 +46,7 @@ export const auth = async (req, res) => {
         res.json({ _id: user._id, name: user.name, email: user.email, token: generateJwt(user._id) })
     } else {
         const error = new Error("Password is not valid")
-        res.status(403).json({ msg: error.message })
+        return res.status(403).json({ msg: error.message })
     }
 }
 
@@ -54,7 +55,7 @@ export const confirmUser = async (req, res) => {
     const confirmUser = await User.findOne({ token })
     if (!confirmUser) {
         const error = new Error("Token is not valid")
-        res.status(403).json({ msg: error.message })
+        return res.status(403).json({ msg: error.message })
     }
     try {
         confirmUser.confirm = true;
@@ -77,6 +78,7 @@ export const restorePassword = async (req, res) => {
         user.token = generateId()
         await user.save()
         res.json({ msg: "We sent an email with instructions to restore your password" })
+        forgto_passwordEmail({ email: user.email, name: user.name, token: user.token })
     } catch (error) {
         console.log(error)
     }
@@ -90,7 +92,7 @@ export const checkToken = async (req, res) => {
     }
     else {
         const error = new Error("Token is not valid")
-        res.status(404).json({ msg: error.message })
+        return res.status(404).json({ msg: error.message })
     }
 }
 
@@ -110,7 +112,7 @@ export const changePassword = async (req, res) => {
     }
     else {
         const error = new Error("Enter a valid token")
-        res.status(404).json({ msg: error.message })
+        return res.status(404).json({ msg: error.message })
     }
 
 }
