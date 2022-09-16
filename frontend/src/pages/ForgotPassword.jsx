@@ -30,7 +30,7 @@ const ForgotPassword = () => {
             {alert.msg && <Alert message={alert} />}
             <h1 className='text-sky-600 font-black text-6xl capitalize'>Change <span className='text-slate-300'> password</span></h1>
 
-            <form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit}>
+            <form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit} onChange={(e) => setAlert({})}>
                 <div className='my-5'>
                     <label className='uppercase text-gray-300 block text-xl mb-3 font-bold' htmlFor="email">Email: </label>
 

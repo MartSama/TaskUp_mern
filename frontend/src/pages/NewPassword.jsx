@@ -50,7 +50,7 @@ const NewPassword = () => {
 
             {validToken ?
                 (
-                    <form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit}>
+                    <form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit} onChange={(e) => setAlert({})} >
 
                 <div className='my-5'>
                     <label className='uppercase text-gray-300 block text-xl mb-3 font-bold' htmlFor="password">New password: </label>

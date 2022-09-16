@@ -40,7 +40,7 @@ const Register = () => {
             <h1 className='text-sky-600 font-black text-6xl capitalize'>Create your account and  <span className='text-slate-300'> manage your projects</span></h1>
 
             {created ? (<h1 className='mt-40 text-slate-300 font-black p-10 bg-gray-600 rounded-lg text-6xl capitalize'>Check your email to confirm <span className='text-sky-600'> your account</span></h1>)
-                : (<form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit}>
+                : (<form action="" className='my-10 bg-gray-900 text-white shadow rounded-lg py-5 px-10' onSubmit={handleSubmit} onChange={(e) => setAlert({})} >
                 <div className='my-5'>
                     <label className='uppercase text-gray-300 block text-xl mb-3 font-bold' htmlFor="name">Name: </label>
 
