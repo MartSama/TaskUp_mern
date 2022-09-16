@@ -3,6 +3,7 @@ import Alert from '../components/Alert'
 const ProjectContext = createContext()
 import axiosClient from '../config/axiosClient'
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const ProjectProvider = ({ children }) => {
     let navigate = useNavigate()
@@ -35,6 +36,24 @@ const ProjectProvider = ({ children }) => {
         }
     }
 
+    useEffect(() => {
+        const token = localStorage.getItem("token")
+        const options = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+        }
+        const getProjecst = async () => {
+            try {
+                const { data } = await axiosClient('/projects', options)
+                setProjects(data)
+            } catch (error) {
+                console.log(error.response)
+            }
+        }
+        getProjecst()
+    }, [])
 
     return (
         <ProjectContext.Provider value={{ handleAlert, alert, submitProject }}>
