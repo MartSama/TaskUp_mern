@@ -6,7 +6,7 @@ const Alert = ({ message }) => {
     if (!toast.isActive(toastId.current)) {
         toastId.current = toast(message.msg, {
             position: "top-right",
-            autoClose: 5000,
+            autoClose: 2000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -19,7 +19,7 @@ const Alert = ({ message }) => {
     return (
         <ToastContainer
             position="top-right"
-            autoClose={5000}
+            autoClose={2000}
             hideProgressBar={false}
             newestOnTop={false}
             closeOnClick

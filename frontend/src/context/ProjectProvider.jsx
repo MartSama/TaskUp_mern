@@ -19,7 +19,7 @@ const ProjectProvider = ({ children }) => {
                 Authorization: `Bearer ${token}`
             }
         }
-        const getProjecst = async () => {
+        const getProjects = async () => {
             try {
                 const { data } = await axiosClient('/projects', options)
                 setProjects(data)
@@ -27,7 +27,7 @@ const ProjectProvider = ({ children }) => {
                 console.log(error.response)
             }
         }
-        getProjecst()
+        getProjects()
     }, [])
 
     const handleAlert = (alert) => {
@@ -35,7 +35,6 @@ const ProjectProvider = ({ children }) => {
     }
 
     const submitProject = async (project) => {
-        try {
             const token = localStorage.getItem("token")
             if (!token) return
 
@@ -45,14 +44,35 @@ const ProjectProvider = ({ children }) => {
                     Authorization: `Bearer ${token}`
                 }
             }
+        if (project.id) {
+            await editProject(project, config)
+        } else {
+            await newProject(project, config)
+        }
+        setTimeout(() => {
+            navigate('projects')
+        }, 2000);
+    }
+
+    const editProject = async (project, config) => {
+        try {
+            const { data } = await axiosClient.put(`/projects/${project.id}`, project, config)
+            const arrayUpdated = projects.map((elemet) => elemet._id === data._id ? data : elemet)
+            setProjects(arrayUpdated)
+            setAlert({ msg: 'Project updated correctly ✍️' })
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+
+    const newProject = async (project, config) => {
+        try {
             const { data } = await axiosClient.post('/projects', project, config)
             setProjects([...projects, data])
             setAlert({ msg: 'Project created correctly 🥳', type: 'success' })
-            setTimeout(() => {
-                navigate('projects')
-            }, 2000);
+
         } catch (error) {
-            console.log(error)
+            console.log(error.response)
         }
     }
 
