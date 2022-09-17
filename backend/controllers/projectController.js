@@ -30,8 +30,8 @@ export const getProject = async (req, res) => {
             return res.status(401).json({ msg: error.message })
         }
 
-        const toDo = await ToDo.find().where('project').equals(project._id)
-        res.json({ project, toDo })
+
+        res.json(project)
     } catch (error) {
         return res.json({ msg: "ID is not valid" })
     }

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import useProject from '../hooks/useProject'
+import Projects from '../pages/Projects'
 import Alert from './Alert'
 const Form = () => {
     const { alert, handleAlert, submitProject } = useProject()
@@ -16,6 +17,10 @@ const Form = () => {
             return
         }
         submitProject({ name, description, deadline, client })
+        setName('')
+        setDescription('')
+        setDeadline('')
+        setClient('')
     }
     return (
         <>

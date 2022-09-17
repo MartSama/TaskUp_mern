@@ -10,6 +10,7 @@ import Projects from "./pages/Projects"
 import ProtectedRoute from "./layout/ProtectedRoute"
 import NewProject from "./pages/NewProject"
 import { ProjectProvider } from "./context/ProjectProvider"
+import Project from "./pages/Project"
 function App() {
 
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/projects" element={<ProtectedRoute />}>
             <Route index element={<Projects />} />
               <Route path="new-project" element={<NewProject />} />
+              <Route path=":id" element={<Project />} />
           </Route>
         </Routes>
         </ProjectProvider>

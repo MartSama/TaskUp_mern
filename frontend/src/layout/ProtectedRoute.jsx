@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar"
 const ProtectedRoute = () => {
     const { auth, loadingData } = useAuth()
     if (loadingData) {
+        //ToDo: add spiner
         return 'spinner'
     }
     return (
