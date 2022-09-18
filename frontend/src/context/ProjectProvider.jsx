@@ -10,6 +10,7 @@ const ProjectProvider = ({ children }) => {
     const [project, setProject] = useState({})
     const [alert, setAlert] = useState({})
     const [loading, setLoading] = useState(false)
+    const [modalFormTodo, setModalFormTodo] = useState(false)
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -118,8 +119,32 @@ const ProjectProvider = ({ children }) => {
             console.log(error.respose)
         }
     }
+
+    const handleModalTodo = () => {
+        setModalFormTodo(!modalFormTodo)
+    }
+
+    const submitTodo = async (todo) => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await axiosClient.post('/toDo', todo, config)
+            setAlert({ msg: 'ToDo created correctly', type: 'success' })
+            setTimeout(() => {
+                handleModalTodo()
+            }, 1000);
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo }}>
             {children}
         </ProjectContext.Provider>
     )
