@@ -11,6 +11,7 @@ const ProjectProvider = ({ children }) => {
     const [alert, setAlert] = useState({})
     const [loading, setLoading] = useState(false)
     const [modalFormTodo, setModalFormTodo] = useState(false)
+    const [modalDeleteTodo, setModalDeleteTodo] = useState(false)
     const [todo, setTodo] = useState({})
 
     useEffect(() => {
@@ -53,7 +54,7 @@ const ProjectProvider = ({ children }) => {
         }
         setTimeout(() => {
             navigate('projects')
-        }, 2000);
+        }, 1000);
     }
 
     const editProject = async (project, config) => {
@@ -115,7 +116,7 @@ const ProjectProvider = ({ children }) => {
             setProjects(arrayUpdated)
             setTimeout(() => {
                 navigate('/projects')
-            }, 2000);
+            }, 1000);
         } catch (error) {
             console.log(error.respose)
         }
@@ -127,7 +128,6 @@ const ProjectProvider = ({ children }) => {
     }
 
     const submitTodo = async (todo) => {
-
         try {
             const token = localStorage.getItem('token')
             if (!token) return
@@ -183,8 +183,39 @@ const ProjectProvider = ({ children }) => {
         setTodo(todo)
         setModalFormTodo(true)
     }
+
+    const handleModalDeleteTodo = (todo) => {
+        setTodo(todo)
+        setModalDeleteTodo(!modalDeleteTodo)
+        handleAlert({})
+    }
+
+    const deleteTodo = async () => {
+        const token = localStorage.getItem('token')
+        if (!token) return
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+        try {
+            const { data } = await axiosClient.delete(`/toDo/${todo._id}`, config)
+            const projectUpdate = { ...project }
+            projectUpdate.todos = projectUpdate.todos.filter((element) => element._id !== todo._id)
+            setProject(projectUpdate)
+            setAlert({ msg: data.msg, type: 'success' })
+            setTimeout(() => {
+                setModalDeleteTodo(false)
+                setAlert({})
+            }, 1000);
+
+        } catch (error) {
+            setAlert({ msg: error.response?.data.msg, type: 'error' })
+        }
+    }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo }}>
             {children}
         </ProjectContext.Provider>
     )

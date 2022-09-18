@@ -5,8 +5,10 @@ import ToDo from "../components/ToDo"
 import SkeletonLoader from "../components/SkeletonLoader"
 import ConfirmMessage from "../components/ConfirmMessage"
 import ModalFormTodo from "../components/ModalFormTodo"
+import ModalDeleteTodo from "../components/ModalDeleteTodo"
+import Alert from "../components/Alert"
 const Project = () => {
-    const { getProject, project, loading, deleteProject, handleModalTodo, handleAlert } = useProject()
+    const { getProject, project, loading, deleteProject, handleModalTodo, handleAlert, alert } = useProject()
     const { id: token } = useParams()
     const [confirmMessage, setConfirmMessage] = useState(false)
     const [modal, setModal] = useState(false)
@@ -27,10 +29,11 @@ const Project = () => {
 
     if (loading) return <SkeletonLoader />
     return (
-        <>
+        <>  
+
             <div className="flex flex-col sm:flex-row items-center justify-between">
-            {confirmMessage && <ConfirmMessage confirmated={handleButtonDelete} />
-            }
+                {confirmMessage && <ConfirmMessage confirmated={handleButtonDelete} />
+                } 
                 <h1 className="font-black text-4xl">{name}</h1>
                 <div className="md:flex items-center  font-black ">
                 <Link to={`/projects/edit/${token}`} className='text-2xl uppercase text-bold'>
@@ -58,7 +61,6 @@ const Project = () => {
             <button type="button" onClick={handleModalTodo} className="text-sm px-8 rounded-lg uppercase font-bold text-black text-center py-3 bg-violet-400 sm:mt-3 mt-4 sm:float-right flex gap-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75" />
             </svg>New To do</button>
-            <ModalFormTodo />
 
             <p className="font-bold text-xl mt-10">ToDos</p>
             <div className="bg-gray-400 shadow mt-10 rounded-lg p-2 ">
@@ -68,6 +70,9 @@ const Project = () => {
                     <p className="text-2xl p-10 text-black text-center animation-pulse">Nothing here, add some todos, then come back.</p>
                 )}
             </div>
+            <ModalFormTodo />
+            <ModalDeleteTodo />
+            {alert.msg && <Alert message={alert} />}
         </>
 
     )

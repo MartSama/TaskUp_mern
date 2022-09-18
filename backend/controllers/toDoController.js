@@ -72,7 +72,7 @@ export const deleteToDo = async (req, res) => {
             return res.status(404).json({ msg: error.message })
         }
         if (toDo.project.creator.toString() !== req.user._id.toString()) {
-            const error = new Error("Invalid actions, you are not the owner")
+            const error = new Error("Invalid action, you are not the owner")
             return res.status(403).json({ msg: error.message })
         }
         await toDo.deleteOne()
