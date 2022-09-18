@@ -5,8 +5,9 @@ import Alert from '../components/Alert'
 const priorityOptions = ['Low', 'Medium', 'High']
 import { useParams } from 'react-router-dom'
 const ModalFormTodo = () => {
-    const { modalFormTodo, handleModalTodo, alert, handleAlert, submitTodo } = useProject()
+    const { modalFormTodo, handleModalTodo, alert, handleAlert, submitTodo, todo } = useProject()
     const { id: project } = useParams()
+    const [id, setId] = useState('')
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('')
@@ -18,12 +19,29 @@ const ModalFormTodo = () => {
             handleAlert({ msg: 'All fields are neccessary', type: 'error' })
             return
         }
-        await submitTodo({ name, description, deadline, priority, project })
+        await submitTodo({ id, name, description, deadline, priority, project })
+        setId('')
         setName('')
         setDescription('')
         setDeadline('')
         setPriority('')
     }
+
+    useEffect(() => {
+        if (todo?._id) {
+            setId(todo._id)
+            setName(todo.name)
+            setDescription(todo.description)
+            setDeadline(todo.deadline?.split('T')[0])
+            setPriority(todo.priority)
+            return
+        }
+        setId('')
+        setName('')
+        setDescription('')
+        setDeadline('')
+        setPriority('')
+    }, [todo])
     return (
         <>
             <Transition.Root show={modalFormTodo} as={Fragment}>
@@ -77,7 +95,7 @@ const ModalFormTodo = () => {
                                 <div className="sm:flex sm:items-start">
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                                         <Dialog.Title as="h3" className="text-lg leading-6      font-bold text-gray-900">
-                                            Create To Do
+                                            {id ? 'Edit To Do' : 'Create To Do'}
                                         </Dialog.Title>
                                         <form className='my-10' onChange={() => handleAlert({})}>
                                             <div className='mb-5'>
@@ -99,7 +117,7 @@ const ModalFormTodo = () => {
                                                     {priorityOptions.map((element) => <option key={element} value={element}>{element}</option>)}
                                                 </select>
                                             </div>
-                                            <input type='submit' className='bg-violet-600 p-3 float-right rounded-lg text-white uppercase animate-pulse font-bold w-1/3 cursor-pointer' value='Add ToDo' onClick={handleSubmit} />
+                                            <input type='submit' className='bg-violet-600 p-3 float-right rounded-lg text-white uppercase animate-pulse font-bold w-1/3 cursor-pointer' value={id ? "Save changes" : "Add ToDo"} onClick={handleSubmit} />
 
                                         </form>
                                     </div>

@@ -11,7 +11,7 @@ const ProjectProvider = ({ children }) => {
     const [alert, setAlert] = useState({})
     const [loading, setLoading] = useState(false)
     const [modalFormTodo, setModalFormTodo] = useState(false)
-    const [todos, setTodos] = useState([])
+    const [todo, setTodo] = useState({})
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -123,9 +123,11 @@ const ProjectProvider = ({ children }) => {
 
     const handleModalTodo = () => {
         setModalFormTodo(!modalFormTodo)
+        setTodo({})
     }
 
     const submitTodo = async (todo) => {
+
         try {
             const token = localStorage.getItem('token')
             if (!token) return
@@ -135,21 +137,54 @@ const ProjectProvider = ({ children }) => {
                     Authorization: `Bearer ${token}`
                 }
             }
+            if (todo?.id) {
+                await editTodo(todo, config)
+            } else {
+                await createTodo(todo, config)
+            }
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+
+    const editTodo = async (todo, config) => {
+        try {
+            const { data } = await axiosClient.put(`/toDo/${todo.id}`, todo, config)
+            setAlert({ msg: 'ToDo updated correctly', type: 'success' })
+            const projectUpdated = { ...project }
+            projectUpdated.todos = projectUpdated.todos.map((element) => element._id === data._id ? data : element)
+            setProject(projectUpdated)
+            setTimeout(() => {
+                setModalFormTodo(false)
+                setAlert({})
+            }, 1000);
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+
+    const createTodo = async (todo, config) => {
+        try {
             const { data } = await axiosClient.post('/toDo', todo, config)
             setAlert({ msg: 'ToDo created correctly', type: 'success' })
             const projectUpdated = { ...project }
             projectUpdated.todos = [...project.todos, data]
             setProject(projectUpdated)
             setTimeout(() => {
-                handleModalTodo()
+                setModalFormTodo(false)
                 setAlert({})
-            }, 500);
+            }, 1000);
         } catch (error) {
             console.log(error.response)
         }
     }
+
+    const handleModalEditTodo = (todo) => {
+        setTodo(todo)
+        setModalFormTodo(true)
+    }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo }}>
             {children}
         </ProjectContext.Provider>
     )
