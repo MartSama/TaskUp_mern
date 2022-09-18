@@ -12,13 +12,17 @@ const ModalFormTodo = () => {
     const [priority, setPriority] = useState('')
     const [deadline, setDeadline] = useState('')
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         if ([name, description, deadline, priority].includes('')) {
             handleAlert({ msg: 'All fields are neccessary', type: 'error' })
             return
         }
-        submitTodo({ name, description, deadline, priority, project })
+        await submitTodo({ name, description, deadline, priority, project })
+        setName('')
+        setDescription('')
+        setDeadline('')
+        setPriority('')
     }
     return (
         <>

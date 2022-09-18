@@ -15,6 +15,9 @@ export const addToDo = async (req, res) => {
     }
     try {
         const toDo = await ToDo.create(req.body)
+        //Saved ID in project
+        existantProject.todos.push(toDo._id)
+        await existantProject.save()
         res.json(toDo)
     } catch (error) {
         console.log(error)

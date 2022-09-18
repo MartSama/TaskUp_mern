@@ -2,7 +2,7 @@ import e from "express"
 import Project from "../models/Project.js"
 import ToDo from "../models/toDo.js"
 export const getProjects = async (req, res) => {
-    const projects = await Project.find().where('creator').equals(req.user)
+    const projects = await Project.find().where('creator').equals(req.user).select('-todos')
     res.json(projects)
 }
 
@@ -20,7 +20,7 @@ export const newProject = async (req, res) => {
 export const getProject = async (req, res) => {
     const { id } = req.params
     try {
-        const project = await Project.findById(id)
+        const project = await Project.findById(id).populate('todos')
         if (!project) {
             const error = new Error("Project not found")
             return res.status(404).json({ msg: error.message })

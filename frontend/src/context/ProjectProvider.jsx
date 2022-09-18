@@ -11,6 +11,7 @@ const ProjectProvider = ({ children }) => {
     const [alert, setAlert] = useState({})
     const [loading, setLoading] = useState(false)
     const [modalFormTodo, setModalFormTodo] = useState(false)
+    const [todos, setTodos] = useState([])
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -136,9 +137,13 @@ const ProjectProvider = ({ children }) => {
             }
             const { data } = await axiosClient.post('/toDo', todo, config)
             setAlert({ msg: 'ToDo created correctly', type: 'success' })
+            const projectUpdated = { ...project }
+            projectUpdated.todos = [...project.todos, data]
+            setProject(projectUpdated)
             setTimeout(() => {
                 handleModalTodo()
-            }, 1000);
+                setAlert({})
+            }, 500);
         } catch (error) {
             console.log(error.response)
         }

@@ -24,6 +24,10 @@ const projectSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    todos: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ToDo'
+    }],
     team: [
         {
             type: mongoose.Schema.Types.ObjectId,
