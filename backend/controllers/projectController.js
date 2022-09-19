@@ -1,6 +1,7 @@
 import e from "express"
 import Project from "../models/Project.js"
 import ToDo from "../models/toDo.js"
+import User from "../models/User.js"
 export const getProjects = async (req, res) => {
     const projects = await Project.find().where('creator').equals(req.user).select('-todos')
     res.json(projects)
@@ -20,7 +21,7 @@ export const newProject = async (req, res) => {
 export const getProject = async (req, res) => {
     const { id } = req.params
     try {
-        const project = await Project.findById(id).populate('todos')
+        const project = await Project.findById(id).populate('todos').populate('team', 'name email')
         if (!project) {
             const error = new Error("Project not found")
             return res.status(404).json({ msg: error.message })
@@ -33,7 +34,7 @@ export const getProject = async (req, res) => {
 
         res.json(project)
     } catch (error) {
-        return res.json({ msg: "ID is not valid" })
+        return res.json({ msg: "Invalid project ID" })
     }
 }
 
@@ -58,7 +59,7 @@ export const editProject = async (req, res) => {
         const savedProject = await project.save()
         res.json(savedProject)
     } catch (error) {
-        return res.json({ msg: "ID is not valid" })
+        return res.json({ msg: "Invalid project ID" })
     }
 }
 
@@ -77,12 +78,63 @@ export const deleteProject = async (req, res) => {
         await project.deleteOne();
         res.json({ msg: "Project deleted correctly" })
     } catch (error) {
-        return res.json({ msg: "Invalid id" })
+        return res.json({ msg: "Invalid project ID" })
     }
 }
 
-export const addCollaborator = async (req, res) => {
+export const lookForCollaborator = async (req, res) => {
+    const { id } = req.params
+    try {
+        const { email } = req.body
+        const user = await User.findOne({ email }).select('-password -confirm -createdAt -token -updatedAt -__v')
+        if (!user) {
+            const error = new Error('User does not have an account')
+            return res.status(404).json({ msg: error.message })
+        }
+        res.json(user)
+    } catch (error) {
+        return res.json({ msg: "Invalid project ID" })
+    }
 
+}
+
+export const addCollaborator = async (req, res) => {
+    const { id } = req.params
+    try {
+        const project = await Project.findById(id)
+        if (!project) {
+            const error = new Error('Project not found')
+            res.status(404).json({ msg: error.message })
+        }
+        if (project.creator.toString() !== req.user._id.toString()) {
+            const error = new Error('You are not the owner, invalid action')
+            return res.status(403).json({ msg: error.message })
+        }
+        const { email } = req.body
+        const user = await User.findOne({ email }).select('-confirm -createdAt -password -token -updatedAt')
+        if (!user) {
+            const error = new Error('User not found')
+            return res.status(404).json({ msg: error.message })
+        }
+
+        if (project.creator.toString() === user._id.toString()) {
+            const error = new Error('Creator can not be collaborator')
+            return res.status(401).json({ msg: error.message })
+        }
+
+        if (project.team.includes(user._id)) {
+            const error = new Error('User already belogs to project')
+            return res.status(403).json({ msg: error.message })
+        }
+
+        project.team.push(user._id)
+        await project.save()
+        res.json({ msg: 'Collaborator added correctly' })
+
+    } catch (error) {
+        console.log(error)
+        return res.json({ msg: "Invalid project ID " })
+    }
 }
 
 export const deleteCollaborator = async (req, res) => {
@@ -92,11 +144,15 @@ export const deleteCollaborator = async (req, res) => {
 
 export const getToDo = async (req, res) => {
     const { id } = req.params
-    const project = await Project.findById(id)
-    if (!project) {
-        const error = new Error("Project not found")
-        return res.status(404).json({ msg: error.message })
+    try {
+        const project = await Project.findById(id)
+        if (!project) {
+            const error = new Error("Project not found")
+            return res.status(404).json({ msg: error.message })
+        }
     }
-
+    catch (error) {
+        return res.json({ msg: "Invalid project ID" })
+    }
 
 }

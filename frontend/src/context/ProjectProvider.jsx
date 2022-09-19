@@ -13,6 +13,8 @@ const ProjectProvider = ({ children }) => {
     const [modalFormTodo, setModalFormTodo] = useState(false)
     const [modalDeleteTodo, setModalDeleteTodo] = useState(false)
     const [todo, setTodo] = useState({})
+    const [collaborator, setCollaborator] = useState({})
+    const [modalDeleteCollaborator, setModalDeleteCollaborator] = useState(false)
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -32,7 +34,6 @@ const ProjectProvider = ({ children }) => {
         }
         getProjects()
     }, [])
-
     const handleAlert = (alert) => {
         setAlert(alert)
     }
@@ -93,7 +94,7 @@ const ProjectProvider = ({ children }) => {
             const { data } = await axiosClient(`/projects/${tokenProject}`, options)
             setProject(data)
         } catch (error) {
-            console.log(error.response)
+            setAlert({ msg: error.response.data.msg, type: 'error' })
         } finally {
             setLoading(false)
         }
@@ -214,8 +215,65 @@ const ProjectProvider = ({ children }) => {
             setAlert({ msg: error.response?.data.msg, type: 'error' })
         }
     }
+
+    const submitCollaborator = async (email) => {
+        setLoading(true)
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+
+            const options = {
+                headers: {
+                    'Content-type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await axiosClient.post('projects/collaborators', { email }, options)
+            setCollaborator(data)
+            setAlert({})
+        } catch (error) {
+            setAlert({ msg: error.response.data.msg, type: 'error' })
+            setCollaborator({})
+
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const addCollaborator = async (email) => {
+        setAlert({})
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+
+            const options = {
+                headers: {
+                    'Content-type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await axiosClient.post(`projects/collaborators/${project._id}`, email, options)
+            setAlert({ msg: data.msg, type: 'success' })
+            setCollaborator({})
+            setTimeout(() => {
+                setAlert({})
+            }, 1000);
+        } catch (error) {
+            setCollaborator({})
+            setAlert({ msg: error.response.data.msg, type: 'error' })
+        }
+    }
+
+    const handleModalDeleteCollaborator = (team) => {
+        setModalDeleteCollaborator(!modalDeleteCollaborator)
+        setCollaborator(team)
+    }
+
+    const deleteCollaborator = () => {
+        console.log(collaborator)
+    }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo, submitCollaborator, collaborator, addCollaborator, handleModalDeleteCollaborator, modalDeleteCollaborator, deleteCollaborator }}>
             {children}
         </ProjectContext.Provider>
     )

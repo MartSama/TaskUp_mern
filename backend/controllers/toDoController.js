@@ -1,3 +1,4 @@
+import e from "express"
 import Project from "../models/Project.js"
 import ToDo from "../models/toDo.js"
 export const addToDo = async (req, res) => {
@@ -74,7 +75,7 @@ export const deleteToDo = async (req, res) => {
         if (toDo.project.creator.toString() !== req.user._id.toString()) {
             const error = new Error("Invalid action, you are not the owner")
             return res.status(403).json({ msg: error.message })
-        }
+        }   
         await toDo.deleteOne()
         res.json({ msg: "Deleted correctly" })
     } catch (error) {

@@ -3,10 +3,12 @@ import useProject from '../hooks/useProject'
 import { useEffect, useState } from "react"
 import ToDo from "../components/ToDo"
 import SkeletonLoader from "../components/SkeletonLoader"
+import Collaborator from "../components/Collaborator"
 import ConfirmMessage from "../components/ConfirmMessage"
 import ModalFormTodo from "../components/ModalFormTodo"
 import ModalDeleteTodo from "../components/ModalDeleteTodo"
 import Alert from "../components/Alert"
+import ModalDeleteCollaborator from "../components/ModalDeleteCollaborator"
 const Project = () => {
     const { getProject, project, loading, deleteProject, handleModalTodo, handleAlert, alert } = useProject()
     const { id: token } = useParams()
@@ -70,8 +72,23 @@ const Project = () => {
                     <p className="text-2xl p-10 text-black text-center animation-pulse">Nothing here, add some todos, then come back.</p>
                 )}
             </div>
+
+            <div className="flex items-center justify-between mt-10 align-middle">
+                <p className="font-bold text-xl">Team mates</p>
+                <Link to={`/projects/collaborators/${project._id}`} className="text-gray-500 uppercase font-bold hover:text-black">Add</Link>
+            </div>
+
+            <div className="bg-black text-amber-100 shadow mt-10 rounded-lg p-2 ">
+                {project.team?.length ? (
+                    project.team.map((team) => <Collaborator key={team._id} team={team} />)
+                ) : (
+                    <p className="text-2xl p-10 text-black text-center animation-pulse">Nothing here, add some collaborators, then come back.</p>
+                )}
+            </div>
+
             <ModalFormTodo />
             <ModalDeleteTodo />
+            <ModalDeleteCollaborator />
             {alert.msg && <Alert message={alert} />}
         </>
 

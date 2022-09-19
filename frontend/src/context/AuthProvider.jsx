@@ -26,7 +26,7 @@ const AuthProvider = ({ children }) => {
                 //navigate('/projects')
             } catch (error) {
                 setAuth({})
-                console.log(error.response.data.msg)
+                console.log(error.response?.data.msg)
             }
             setLoadingData(false)
 
