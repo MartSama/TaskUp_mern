@@ -1,9 +1,16 @@
-import React from 'react'
+import { io } from 'socket.io-client'
 import useProject from '../hooks/useProject'
 import CardProject from '../components/CardProject'
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+let socket;
 const Projects = () => {
     const { projects } = useProject()
+
+    useEffect(() => {
+        socket = io(import.meta.env.VITE_BACKEND_URL)
+        socket.emit('try', 'mart')
+    }, [])
     return (
         <>
             <h1 className='text-4xl font-black'>Projects</h1>
