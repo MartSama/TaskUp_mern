@@ -9,6 +9,6 @@ router.route('/:id').get(cheackAuth, getProject).put(cheackAuth, editProject).de
 router.get('/toDo/:id', cheackAuth, getToDo)
 router.post('/collaborators', cheackAuth, lookForCollaborator)
 router.post('/collaborators/:id', cheackAuth, addCollaborator)
-router.delete('/collaborator/:id', cheackAuth, deleteCollaborator)
+router.post('/delete-collaborator/:id', cheackAuth, deleteCollaborator)
 
 export default router

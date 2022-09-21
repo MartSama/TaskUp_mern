@@ -76,13 +76,34 @@ export const deleteToDo = async (req, res) => {
             const error = new Error("Invalid action, you are not the owner")
             return res.status(403).json({ msg: error.message })
         }   
-        await toDo.deleteOne()
+        const project = await Project.findById(toDo.project)
+        project.todos.pull(toDo._id)
+        await Promise.allSettled([await project.save(), await toDo.save()])
         res.json({ msg: "Deleted correctly" })
     } catch (error) {
         res.json({ msg: "Invalid id" })
     }
 }
 export const changeState = async (req, res) => {
+    const { id } = req.params
+    try {
+        const todo = await ToDo.findById(id).populate('project')
+        if (!todo) {
+            const error = new Error("Todo not found")
+            return res.status(404).json({ msg: error.message })
+        }
 
-}
+        if (todo.project.creator.toString() !== req.user._id.toString() && !todo.project.team.some((elememt) => elememt._id.toString() === req.user._id.toString())) {
+            const error = new Error("Invalid actions, no authorization")
+            return res.status(401).json({ msg: error.message })
+        }
+        todo.state = !todo.state
+        todo.complete = req.user._id
+        await todo.save()
+        const todoSaved = await ToDo.findById(id).populate('project').populate('complete')
+        res.json(todoSaved)
+    } catch (error) {
+        res.json({ msg: "Invalid id" })
+    }
+}    
 

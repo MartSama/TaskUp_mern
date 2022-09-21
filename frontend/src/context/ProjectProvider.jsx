@@ -15,6 +15,7 @@ const ProjectProvider = ({ children }) => {
     const [todo, setTodo] = useState({})
     const [collaborator, setCollaborator] = useState({})
     const [modalDeleteCollaborator, setModalDeleteCollaborator] = useState(false)
+    const [lookup, setLookup] = useState(false)
 
     useEffect(() => {
         const token = localStorage.getItem("token")
@@ -36,6 +37,9 @@ const ProjectProvider = ({ children }) => {
     }, [])
     const handleAlert = (alert) => {
         setAlert(alert)
+        setTimeout(() => {
+            setAlert({})
+        }, 2000);
     }
 
     const submitProject = async (project) => {
@@ -63,7 +67,7 @@ const ProjectProvider = ({ children }) => {
             const { data } = await axiosClient.put(`/projects/${project.id}`, project, config)
             const arrayUpdated = projects.map((elemet) => elemet._id === data._id ? data : elemet)
             setProjects(arrayUpdated)
-            setAlert({ msg: 'Project updated correctly ✍️' })
+            handleAlert({ msg: 'Project updated correctly ✍️' })
         } catch (error) {
             console.log(error.response)
         }
@@ -73,10 +77,9 @@ const ProjectProvider = ({ children }) => {
         try {
             const { data } = await axiosClient.post('/projects', project, config)
             setProjects([...projects, data])
-            setAlert({ msg: 'Project created correctly 🥳', type: 'success' })
-
+            handleAlert({ msg: 'Project created correctly 🥳', type: 'success' })
         } catch (error) {
-            console.log(error.response)
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
         }
     }
 
@@ -94,7 +97,7 @@ const ProjectProvider = ({ children }) => {
             const { data } = await axiosClient(`/projects/${tokenProject}`, options)
             setProject(data)
         } catch (error) {
-            setAlert({ msg: error.response.data.msg, type: 'error' })
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
         } finally {
             setLoading(false)
         }
@@ -151,13 +154,12 @@ const ProjectProvider = ({ children }) => {
     const editTodo = async (todo, config) => {
         try {
             const { data } = await axiosClient.put(`/toDo/${todo.id}`, todo, config)
-            setAlert({ msg: 'ToDo updated correctly', type: 'success' })
+            handleAlert({ msg: 'ToDo updated correctly', type: 'success' })
             const projectUpdated = { ...project }
             projectUpdated.todos = projectUpdated.todos.map((element) => element._id === data._id ? data : element)
             setProject(projectUpdated)
             setTimeout(() => {
                 setModalFormTodo(false)
-                setAlert({})
             }, 1000);
         } catch (error) {
             console.log(error.response)
@@ -167,16 +169,15 @@ const ProjectProvider = ({ children }) => {
     const createTodo = async (todo, config) => {
         try {
             const { data } = await axiosClient.post('/toDo', todo, config)
-            setAlert({ msg: 'ToDo created correctly', type: 'success' })
+            handleAlert({ msg: data.msg, type: 'success' })
             const projectUpdated = { ...project }
             projectUpdated.todos = [...project.todos, data]
             setProject(projectUpdated)
             setTimeout(() => {
                 setModalFormTodo(false)
-                setAlert({})
             }, 1000);
         } catch (error) {
-            console.log(error.response)
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
         }
     }
 
@@ -205,14 +206,13 @@ const ProjectProvider = ({ children }) => {
             const projectUpdate = { ...project }
             projectUpdate.todos = projectUpdate.todos.filter((element) => element._id !== todo._id)
             setProject(projectUpdate)
-            setAlert({ msg: data.msg, type: 'success' })
+            handleAlert({ msg: data.msg, type: 'success' })
             setTimeout(() => {
                 setModalDeleteTodo(false)
-                setAlert({})
             }, 1000);
 
         } catch (error) {
-            setAlert({ msg: error.response?.data.msg, type: 'error' })
+            handleAlert({ msg: error.response?.data.msg, type: 'error' })
         }
     }
 
@@ -230,18 +230,16 @@ const ProjectProvider = ({ children }) => {
             }
             const { data } = await axiosClient.post('projects/collaborators', { email }, options)
             setCollaborator(data)
-            setAlert({})
+            handleAlert({ msg: data.msg, type: 'success' })
         } catch (error) {
-            setAlert({ msg: error.response.data.msg, type: 'error' })
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
             setCollaborator({})
-
         } finally {
             setLoading(false)
         }
     }
 
     const addCollaborator = async (email) => {
-        setAlert({})
         try {
             const token = localStorage.getItem('token')
             if (!token) return
@@ -253,14 +251,11 @@ const ProjectProvider = ({ children }) => {
                 }
             }
             const { data } = await axiosClient.post(`projects/collaborators/${project._id}`, email, options)
-            setAlert({ msg: data.msg, type: 'success' })
+            handleAlert({ msg: data.msg, type: 'success' })
             setCollaborator({})
-            setTimeout(() => {
-                setAlert({})
-            }, 1000);
         } catch (error) {
             setCollaborator({})
-            setAlert({ msg: error.response.data.msg, type: 'error' })
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
         }
     }
 
@@ -269,11 +264,57 @@ const ProjectProvider = ({ children }) => {
         setCollaborator(team)
     }
 
-    const deleteCollaborator = () => {
-        console.log(collaborator)
+    const deleteCollaborator = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+
+            const options = {
+                headers: {
+                    'Content-type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await axiosClient.post(`/projects/delete-collaborator/${project._id}`, { id: collaborator._id }, options)
+
+            const projectUpdated = { ...project }
+            projectUpdated.team = projectUpdated.team.filter((element) => element._id !== collaborator._id)
+            setProject(projectUpdated)
+            handleAlert({ msg: data.msg, type: 'success' })
+            setCollaborator({})
+            setTimeout(() => {
+                setModalDeleteCollaborator(false)
+            }, 1000);
+        } catch (error) {
+            handleAlert({ msg: error.response.data.msg, type: 'error' })
+        }
+    }
+
+    const completeTodo = async (id) => {
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) return
+
+            const options = {
+                headers: {
+                    'Content-type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            const { data } = await axiosClient.post(`/toDo/state/${id}`, {}, options)
+            const projectUpdated = { ...project }
+            projectUpdated.todos = projectUpdated.todos.map((element) => element._id === data._id ? data : element)
+            setProject(projectUpdated)
+            setTodo({})
+        } catch (error) {
+            console.log(error.response)
+        }
+    }
+    const handleLookup = () => {
+        setLookup(!lookup)
     }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo, submitCollaborator, collaborator, addCollaborator, handleModalDeleteCollaborator, modalDeleteCollaborator, deleteCollaborator }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo, submitCollaborator, collaborator, addCollaborator, handleModalDeleteCollaborator, modalDeleteCollaborator, deleteCollaborator, completeTodo, lookup, handleLookup }}>
             {children}
         </ProjectContext.Provider>
     )

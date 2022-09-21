@@ -3,7 +3,12 @@ import Project from "../models/Project.js"
 import ToDo from "../models/toDo.js"
 import User from "../models/User.js"
 export const getProjects = async (req, res) => {
-    const projects = await Project.find().where('creator').equals(req.user).select('-todos')
+    const projects = await Project.find({
+        $or: [
+            { 'team': { $in: req.user } },
+            { 'creator': { $in: req.user } },
+        ]
+    }).select('-todos')
     res.json(projects)
 }
 
@@ -21,12 +26,12 @@ export const newProject = async (req, res) => {
 export const getProject = async (req, res) => {
     const { id } = req.params
     try {
-        const project = await Project.findById(id).populate('todos').populate('team', 'name email')
+        const project = await Project.findById(id).populate({ path: 'todos', populate: { path: 'complete', select: 'name' } }).populate('team', 'name email')
         if (!project) {
             const error = new Error("Project not found")
             return res.status(404).json({ msg: error.message })
         }
-        if (project.creator.toString() !== req.user._id.toString()) {
+        if (project.creator.toString() !== req.user._id.toString() && !project.team.some((elememt) => elememt._id.toString() === req.user._id.toString())) {
             const error = new Error("Invalid actions, no authorization")
             return res.status(401).json({ msg: error.message })
         }
@@ -138,7 +143,26 @@ export const addCollaborator = async (req, res) => {
 }
 
 export const deleteCollaborator = async (req, res) => {
+    const { id } = req.params
+    try {
+        const project = await Project.findById(id)
+        if (!project) {
+            const error = new Error('Project not found')
+            res.status(404).json({ msg: error.message })
+        }
+        if (project.creator.toString() !== req.user._id.toString()) {
+            const error = new Error('You are not the owner, invalid action')
+            return res.status(403).json({ msg: error.message })
+        }
 
+        project.team.pull(req.body.id)
+        await project.save()
+        res.json({ msg: 'Collaborator deleted correctly' })        
+
+    } catch (error) {
+        console.log(error)
+        return res.json({ msg: "Invalid project ID " })
+    }
 }
 
 

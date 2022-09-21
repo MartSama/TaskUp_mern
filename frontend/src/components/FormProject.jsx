@@ -40,7 +40,7 @@ const FormProject = () => {
     return (
         <>
             {alert.msg && <Alert message={alert} />}
-            <form className='bg-gray-700 py-10 px-5 md:w-2/3 rounded-lg mx-auto mt-10' onSubmit={handleSubmit} onChange={() => handleAlert({})}>
+            <form className='bg-gray-700 py-10 px-5 md:w-2/3 rounded-lg mx-auto mt-10 w-full' onSubmit={handleSubmit} onChange={() => handleAlert({})}>
                 <div className='w-[90%] mx-auto mb-5'>
                     <label htmlFor="name" className='text-white font-bold text-2xl italic block text-center'>Name </label>
                     <input type="text" className='w-full mt-2 py-2 rounded-xl bg-violet-200 shadow-md shadow-black px-2 placeholder-black' id='name' placeholder='Name of project' value={name} onChange={(e) => setName(e.target.value)} />
