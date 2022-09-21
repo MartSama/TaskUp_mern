@@ -46,12 +46,32 @@ const io = new Server(server, {
     cors: {
         origin: process.env.FRONTEND_URL,
     }
-})
+}) 
 
 io.on('connection', (socket) => {
     console.log('Conected to socket io')
     //Define socket events 
-    socket.on('try', (name) => {
-        console.log('try socket', name)
+    socket.on('open project', (project) => {
+        socket.join(project)
+    })
+
+    socket.on("create todo", (todo) => {
+        const { project } = todo
+        socket.to(project).emit('todo added', todo)
+    })
+
+    socket.on("delete todo", (todo) => {
+        const { project } = todo
+        socket.to(project).emit('deleted todo', todo)
+    })
+
+    socket.on("edit todo", (todo) => {
+        const project = todo.project._id
+        socket.to(project).emit('edited todo', todo)
+    })
+
+    socket.on('complete todo', (todo) => {
+        const project = todo.project._id
+        socket.to(project).emit('completed todo', todo)
     })
 })

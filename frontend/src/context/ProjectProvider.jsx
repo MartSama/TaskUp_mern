@@ -2,8 +2,8 @@ import { useState, useEffect, createContext } from "react";
 const ProjectContext = createContext()
 import axiosClient from '../config/axiosClient'
 import { useNavigate } from "react-router-dom";
-
-
+import { io } from "socket.io-client";
+let socket;
 const ProjectProvider = ({ children }) => {
     let navigate = useNavigate()
     const [projects, setProjects] = useState([])
@@ -35,6 +35,17 @@ const ProjectProvider = ({ children }) => {
         }
         getProjects()
     }, [])
+
+    useEffect(() => {
+        socket = io(import.meta.env.VITE_BACKEND_URL)
+    }, [])
+
+    useEffect(() => {
+        socket.on('todo added', (newTodo) => {
+            console.log(newTodo)
+        })
+    })
+
     const handleAlert = (alert) => {
         setAlert(alert)
         setTimeout(() => {
@@ -76,8 +87,8 @@ const ProjectProvider = ({ children }) => {
     const newProject = async (project, config) => {
         try {
             const { data } = await axiosClient.post('/projects', project, config)
+            handleAlert({ msg: 'Project created correctly', type: 'success' })
             setProjects([...projects, data])
-            handleAlert({ msg: 'Project created correctly 🥳', type: 'success' })
         } catch (error) {
             handleAlert({ msg: error.response.data.msg, type: 'error' })
         }
@@ -155,12 +166,10 @@ const ProjectProvider = ({ children }) => {
         try {
             const { data } = await axiosClient.put(`/toDo/${todo.id}`, todo, config)
             handleAlert({ msg: 'ToDo updated correctly', type: 'success' })
-            const projectUpdated = { ...project }
-            projectUpdated.todos = projectUpdated.todos.map((element) => element._id === data._id ? data : element)
-            setProject(projectUpdated)
             setTimeout(() => {
                 setModalFormTodo(false)
             }, 1000);
+            socket.emit('edit todo', data)
         } catch (error) {
             console.log(error.response)
         }
@@ -170,9 +179,8 @@ const ProjectProvider = ({ children }) => {
         try {
             const { data } = await axiosClient.post('/toDo', todo, config)
             handleAlert({ msg: data.msg, type: 'success' })
-            const projectUpdated = { ...project }
-            projectUpdated.todos = [...project.todos, data]
-            setProject(projectUpdated)
+
+            socket.emit('create todo', data)
             setTimeout(() => {
                 setModalFormTodo(false)
             }, 1000);
@@ -203,14 +211,12 @@ const ProjectProvider = ({ children }) => {
         }
         try {
             const { data } = await axiosClient.delete(`/toDo/${todo._id}`, config)
-            const projectUpdate = { ...project }
-            projectUpdate.todos = projectUpdate.todos.filter((element) => element._id !== todo._id)
-            setProject(projectUpdate)
             handleAlert({ msg: data.msg, type: 'success' })
             setTimeout(() => {
                 setModalDeleteTodo(false)
             }, 1000);
-
+            socket.emit('delete todo', todo)
+            setTodo({})
         } catch (error) {
             handleAlert({ msg: error.response?.data.msg, type: 'error' })
         }
@@ -302,9 +308,7 @@ const ProjectProvider = ({ children }) => {
                 }
             }
             const { data } = await axiosClient.post(`/toDo/state/${id}`, {}, options)
-            const projectUpdated = { ...project }
-            projectUpdated.todos = projectUpdated.todos.map((element) => element._id === data._id ? data : element)
-            setProject(projectUpdated)
+            socket.emit('complete todo', data)
             setTodo({})
         } catch (error) {
             console.log(error.response)
@@ -313,8 +317,32 @@ const ProjectProvider = ({ children }) => {
     const handleLookup = () => {
         setLookup(!lookup)
     }
+
+    const submitTodosProject = (newTodo) => {
+        const projectUpdated = { ...project }
+        projectUpdated.todos = [...projectUpdated.todos, newTodo]
+        setProject(projectUpdated)
+    }
+
+    const deleteTodosProject = (deletedTodo) => {
+        const projectUpdate = { ...project }
+        projectUpdate.todos = projectUpdate.todos.filter((element) => element._id !== deletedTodo._id)
+        setProject(projectUpdate)
+    }
+
+    const editTodosProject = (editedTodo) => {
+        const projectUpdated = { ...project }
+        projectUpdated.todos = projectUpdated.todos.map((element) => element._id === editedTodo._id ? editedTodo : element)
+        setProject(projectUpdated)
+    }
+
+    const completeTodosProject = (completedTodo) => {
+        const projectUpdated = { ...project }
+        projectUpdated.todos = projectUpdated.todos.map((element) => element._id === completedTodo._id ? completedTodo : element)
+        setProject(projectUpdated)
+    }
     return (
-        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo, submitCollaborator, collaborator, addCollaborator, handleModalDeleteCollaborator, modalDeleteCollaborator, deleteCollaborator, completeTodo, lookup, handleLookup }}>
+        <ProjectContext.Provider value={{ projects, handleAlert, alert, submitProject, getProject, project, loading, deleteProject, modalFormTodo, handleModalTodo, submitTodo, handleModalEditTodo, todo, modalDeleteTodo, handleModalDeleteTodo, deleteTodo, submitCollaborator, collaborator, addCollaborator, handleModalDeleteCollaborator, modalDeleteCollaborator, deleteCollaborator, completeTodo, lookup, handleLookup, submitTodosProject, deleteTodosProject, editTodosProject, completeTodosProject }}>
             {children}
         </ProjectContext.Provider>
     )

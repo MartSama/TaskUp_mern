@@ -9,9 +9,12 @@ import ModalFormTodo from "../components/ModalFormTodo"
 import ModalDeleteTodo from "../components/ModalDeleteTodo"
 import Alert from "../components/Alert"
 import ModalDeleteCollaborator from "../components/ModalDeleteCollaborator"
+import { io } from "socket.io-client"
 import useAdmin from "../hooks/useAdmin"
+let socket;
+
 const Project = () => {
-    const { getProject, project, loading, deleteProject, handleModalTodo, handleAlert, alert } = useProject()
+    const { getProject, project, loading, deleteProject, handleModalTodo, handleAlert, alert, submitTodosProject, deleteTodosProject, editTodosProject, completeTodosProject } = useProject()
     const { id: token } = useParams()
     const [confirmMessage, setConfirmMessage] = useState(false)
     //const [modal, setModal] = useState(false)
@@ -21,6 +24,34 @@ const Project = () => {
         getProject(token)
         handleAlert({})
     }, [])
+
+    useEffect(() => {
+        socket = io(import.meta.env.VITE_BACKEND_URL)
+        socket.emit('open project', token)
+    }, [])
+
+    useEffect(() => {
+        socket.on('todo added', (todo) => {
+            if (todo.project === project._id) {
+                submitTodosProject(todo)
+            }
+        })
+        socket.on('deleted todo', (deletedTodo) => {
+            if (deletedTodo.project === project._id) {
+                deleteTodosProject(deletedTodo)
+            }
+        })
+        socket.on('edited todo', (editedTodo) => {
+            if (editedTodo.project._id === project._id) {
+                editTodosProject(editedTodo)
+            }
+        })
+        socket.on('completed todo', (completedTodo) => {
+            if (completedTodo.project._id === project._id) {
+                completeTodosProject(completedTodo)
+            }
+        })
+    })
     const handleButtonDelete = (responseConfirm) => {
         setConfirmMessage(true)
         if (responseConfirm) {
